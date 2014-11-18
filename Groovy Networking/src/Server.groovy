@@ -13,9 +13,9 @@ class Server implements Runnable
     public static void main(String... args)
     {
         def server
-        def port = (args.length == 1) ? Integer.parseInt(args[0]) : 1024
+        def port = (args.length == 1) ? args[0] as Integer : 1024
 
-        while(port < 1024 || available(port)) {
+        while(port < 1024 /*|| available(port)*/) {
             println "in"
             port++
         }
@@ -66,8 +66,12 @@ class Server implements Runnable
         {
             def server_socket = new ServerSocket(port)
             ports_in_use.add(port)
+
             println "[Server up]"
             println "IP: $ip"
+            println "Port: $port"
+            println "===Messages==="
+
             HandleClosures()
 
             while(true)
