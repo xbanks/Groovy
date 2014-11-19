@@ -5,6 +5,7 @@
 class Client implements Runnable
 {
     private Socket client_socket
+    private static Thread th
     def ip
     def port
     def name
@@ -30,7 +31,8 @@ class Client implements Runnable
 
 
         client = new Client(ip, port)
-        new Thread(client).start()
+        th = new Thread(client)
+        th.start()
     }
 
     Client(ip, port, name) {
@@ -92,6 +94,11 @@ class Client implements Runnable
         def outgoing = Thread.start {
             stdin.each {
                 to_server.println(it)
+                if(to_server.checkError())
+                {
+                    println('[SERVER IS CLOSED]')
+                    System.exit(0)
+                }
             }
         }
 
@@ -102,9 +109,7 @@ class Client implements Runnable
             }
         }
 
-        outgoing.interrupt()
-        incoming.interrupt()
-    }
 
+    }
 }
 
