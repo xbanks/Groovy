@@ -1,41 +1,51 @@
+import groovy.util.logging.Log
+
 /**
  * Created by xavier on 11/17/14.
  */
+@Log
 class Server implements Runnable
 {
+    private ServerSocket server_socket
     private port
     private ip
     private static ports_in_use = []
     private num_clients = 0
     private LinkedList<String> messageList
     private client_list = []
+    private static Reader stdin
 
     public static void main(String... args)
     {
         def server
         def port = (args.length == 1) ? args[0] as Integer : 1024
 
-        while(port < 1024 /*|| available(port)*/) {
+        while(port < 1024 || !available(port)) {
             println "in"
             port++
         }
 
+        stdin = (System?.console()?.reader()) ?: (new BufferedReader(new InputStreamReader(System.in)))
 
-        def choice = System.console().readLine "Cool with using $port? (y/n)"
+        println "Cool with using port: $port? (y/n)"
+        def choice = stdin.readLine()
         (choice.toLowerCase() == "y") ? server = new Server(port) : System.exit(0)
 
-        new Thread(server).start()
+        def ServerThread = new Thread(server).start()
     }
+
 
     private static boolean available(int port)
     {
         try
         {
-            new ServerSocket(port)
+            ServerSocket testSocket = new ServerSocket(port)
+            testSocket.close()
             return true
         }
         catch (IOException ioe)
         {
+            log.info(ioe.getMessage() + "\nunavailabe port: $port")
             return false
         }
     }
@@ -64,17 +74,18 @@ class Server implements Runnable
     {
         try
         {
-            def server_socket = new ServerSocket(port)
+            server_socket = new ServerSocket(port)
             ports_in_use.add(port)
 
-            println "[Server up]"
-            println "IP: $ip"
-            println "Port: $port"
-            println "===Messages==="
+            printf "[%s]\n", "Server up".center(22)
+            printf "[%s]\n","IP: $ip".center(22)
+            printf "[%s]\n","Port: $port".center(22)
+            printf "[%s]\n","exit() to close server".center(22)
+            printf "[%s]\n","===Messages==="
 
             HandleClosures()
 
-            while(true)
+            while(!server_socket.isClosed())
             {
                 def client = server_socket.accept()
                 client_list.add(client)
@@ -111,13 +122,15 @@ class Server implements Runnable
                 client_list.each {
                     if(it != client)
                     {
-                        def to_client = new PrintWriter(it.getOutputStream(), true)
+                        PrintWriter to_client = new PrintWriter(it.getOutputStream(), true)
                         to_client.println "Other client: $message"
                     }
 
                 }
             }
         }
+
+        th.interrupt()
     }
 
     /**
@@ -126,11 +139,9 @@ class Server implements Runnable
      */
     void HandleClosures()
     {
-        def stdin = new BufferedReader(new InputStreamReader(System.in))
-
         def th1 = Thread.start {
-            while(true) {
-                stdin.readLine().eachLine
+            while(!server_socket.isClosed()) {
+                stdin.eachLine
                         {
                             if (it.toLowerCase() == "exit()") {
                                 println "Closing server"
@@ -141,7 +152,7 @@ class Server implements Runnable
         }
 
         def th = Thread.start {
-            while (true) {
+            while (!server_socket.isClosed()) {
                 for (int i = 0; i < client_list.size(); i++) {
                     if (client_list.get(i).isClosed()) {
                         client_list.remove(i)
@@ -151,6 +162,9 @@ class Server implements Runnable
                 }
             }
         }
+
+        th1.interrupt()
+        th.interrupt()
     }
 
 }

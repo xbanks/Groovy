@@ -4,22 +4,32 @@
 
 class Client implements Runnable
 {
+    private Socket client_socket
     def ip
     def port
     def name
-
+    private static Reader stdin
     public static void main(String... args)
     {
         Client client
         def ip, port
         if(args.length == 2)
         {
+            ip = args[0]
             port = Integer.parseInt(args[1])
-            client = new Client(args[0], port)
         }
         else
-            client = new Client()
+        {
+            stdin = (System?.console()?.reader()) ?: (new BufferedReader(new InputStreamReader(System.in)))
+            print 'IP: '
+            ip = stdin.readLine()
+            print 'Port: '
+            port = Integer.parseInt(stdin.readLine())
 
+        }
+
+
+        client = new Client(ip, port)
         new Thread(client).start()
     }
 
@@ -52,11 +62,10 @@ class Client implements Runnable
 
         try
         {
-            def client_socket = new Socket(ip, port)
+            client_socket = new Socket(ip, port)
             def connection_string = "Connected to server\nIP: ${client_socket.inetAddress.address}\nPort: ${client_socket.port}"
-            println connection_string
 
-            def stdin = new BufferedReader(new InputStreamReader(System.in))
+            println connection_string
             HandleMessages(client_socket, stdin)
         }
         catch (IOException ioe)
@@ -92,6 +101,9 @@ class Client implements Runnable
                 println it
             }
         }
+
+        outgoing.interrupt()
+        incoming.interrupt()
     }
 
 }
