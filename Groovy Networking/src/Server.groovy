@@ -27,7 +27,7 @@ class Server implements Runnable
 
         stdin = (System?.console()?.reader()) ?: (new BufferedReader(new InputStreamReader(System.in)))
 
-        println "Cool with using port: $port? (y/n)"
+        print "Cool with using port: $port? (y/n)"
         def choice = stdin.readLine()
         (choice.toLowerCase() == "y") ? server = new Server(port) : System.exit(0)
 

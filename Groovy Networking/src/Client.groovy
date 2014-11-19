@@ -4,15 +4,16 @@
 
 class Client implements Runnable
 {
-    private Socket client_socket
     private static Thread th
-    def ip
-    def port
-    def name
-    private static Reader stdin
+    private static stdin
+    private client_socket
+    private ip
+    private port
+    private name
+
     public static void main(String... args)
     {
-        Client client
+        def client
         def ip, port
         if(args.length == 2)
         {
@@ -28,7 +29,6 @@ class Client implements Runnable
             port = Integer.parseInt(stdin.readLine())
 
         }
-
 
         client = new Client(ip, port)
         th = new Thread(client)
@@ -112,4 +112,3 @@ class Client implements Runnable
 
     }
 }
-
