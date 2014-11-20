@@ -1,5 +1,7 @@
 /**
  * Created by xavier on 11/17/14.
+ * Client object.
+ * This is a client that connects to a provided server based on given inputs.
  */
 
 class Client implements Runnable
@@ -18,15 +20,16 @@ class Client implements Runnable
         if(args.length == 2)
         {
             ip = args[0]
-            port = Integer.parseInt(args[1])
+            port = args[1] as Integer // Integer.parseInt(args[1])
         }
         else
         {
+            // This is done in order to make sure that input can be taken from a variety of consoles
             stdin = (System?.console()?.reader()) ?: (new BufferedReader(new InputStreamReader(System.in)))
             print 'IP: '
             ip = stdin.readLine()
             print 'Port: '
-            port = Integer.parseInt(stdin.readLine())
+            port = stdin.readLine() as Integer // Integer.parseInt(stdin.readLine())
 
         }
 
@@ -65,7 +68,9 @@ class Client implements Runnable
         try
         {
             client_socket = new Socket(ip, port)
-            def connection_string = "Connected to server\nIP: ${client_socket.inetAddress.address}\nPort: ${client_socket.port}"
+            def connection_string = "Connected to server"+
+                    "\nIP: ${client_socket.inetAddress.address}" +
+                    "\nPort: ${client_socket.port}"
 
             println connection_string
             HandleMessages(client_socket, stdin)
@@ -82,7 +87,7 @@ class Client implements Runnable
      * @param client_socket
      * @param stdin
      */
-    void HandleMessages(client_socket, stdin)
+    private HandleMessages(client_socket, stdin)
     {
         def from_server =
                 new BufferedReader(

@@ -2,7 +2,10 @@ import groovy.util.logging.Log
 
 /**
  * Created by xavier on 11/17/14.
+ * Creates a new Server for Clients to connect to.
+ * Can be run on its own or called and started by an outside method
  */
+
 @Log
 class Server implements Runnable
 {
@@ -61,7 +64,7 @@ class Server implements Runnable
         this(1025)
     }
 
-    def getPort() {
+    public getPort() {
         return port
     }
 
@@ -108,7 +111,7 @@ class Server implements Runnable
      * @param client
      * @param client_num
      */
-    void HandleMessages(Socket client, client_num)
+    private HandleMessages(Socket client, client_num)
     {
         def th = Thread.start {
             def from_client = new BufferedReader( new InputStreamReader(client.getInputStream()))
@@ -137,7 +140,7 @@ class Server implements Runnable
      * This removes all of the clients that leave
      * in order to make sure that no messages are being sent to closed sockets
      */
-    void HandleClosures()
+    private HandleClosures()
     {
         def th1 = Thread.start {
             while(!server_socket.isClosed()) {
